@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Malta Trip Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: a menu of options on the left, a sticky schematic map on the right that lights up the stops of whichever option is selected. Palette comes from painted luzzu boats against sea and limestone. */
+:root {
+  --bg: #EDF2F3;
+  --surface: #FFFFFF;
+  --ink: #12262E;
+  --muted: #4F686F;
+  --line: #C9D7DA;
+  --blue: #1D5FC4;
+  --blue-soft: #DCE8FA;
+  --yellow: #F0B323;
+  --yellow-soft: #FBEFC8;
+  --red: #D13F2D;
+  --red-soft: #F8DDD8;
+  --sea: #D3E6EE;
+  --land: #EDE6D3;
+  --land-line: #B6AB8E;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1A20; --surface: #14252C; --ink: #E4EEF0; --muted: #93A9AF; --line: #27434D;
+    --blue: #7FAEF7; --blue-soft: #1B3556; --yellow: #F2B93B; --yellow-soft: #3A3014;
+    --red: #F2806F; --red-soft: #43211C; --sea: #10303D; --land: #243238; --land-line: #3C4F57;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1A20; --surface: #14252C; --ink: #E4EEF0; --muted: #93A9AF; --line: #27434D;
+  --blue: #7FAEF7; --blue-soft: #1B3556; --yellow: #F2B93B; --yellow-soft: #3A3014;
+  --red: #F2806F; --red-soft: #43211C; --sea: #10303D; --land: #243238; --land-line: #3C4F57;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+.wrap {
+  max-width: 1200px; margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+header h1 { font-weight: 800; font-size: clamp(2.1rem, 5.4vw, 3.6rem); letter-spacing: -.02em; margin-top: 8px; }
+header p.lead { max-width: 62ch; color: var(--muted); font-size: 1.05rem; margin: 12px 0 0; }
+
+.days { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin: 26px 0 36px; padding: 0; list-style: none; }
+.day { background: var(--surface); border: 1px solid var(--line); border-top-width: 4px; border-radius: 6px; padding: 8px 10px 10px; min-width: 0; }
+.day b { display: block; font-family: var(--font-mono); font-weight: 500; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.day span { display: block; font-size: 13.5px; line-height: 1.35; margin-top: 2px; }
+.day.arrival, .day.leave { border-top-color: var(--line); }
+.day.set { border-top-color: var(--red); }
+.day.free { border-top-color: var(--blue); }
+.day.work { border-top-color: var(--yellow); }
+
+.main { display: grid; gap: 32px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 980px) {
+  .main { grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr); gap: 40px; }
+  .mapcol { position: sticky; top: 16px; }
+}
+.group + .group { margin-top: 36px; }
+.group h2 { font-size: 1.6rem; font-weight: 700; }
+.group .hint { color: var(--muted); margin: 4px 0 14px; font-size: 14.5px; }
+.opts { display: grid; gap: 10px; }
+.opt {
+  display: block; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 14px 16px 14px;
+}
+.opt:hover { border-color: var(--muted); }
+.opt:focus-visible, .pin:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.opt[aria-pressed="true"] { border-color: var(--c); background: var(--soft); }
+.opt h3 { font-size: 1.25rem; font-weight: 700; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 8px; }
+.tag { font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line); border-radius: 4px; padding: 1px 7px; background: var(--bg); }
+.opt .pitch { margin: 0 0 6px; }
+.opt .stops { font-size: 14px; color: var(--muted); margin: 0; }
+.opt .tip { font-size: 14px; margin: 8px 0 0; padding-top: 8px; border-top: 1px dashed var(--line); }
+.opt .onmap { display: inline-block; margin-top: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--c); }
+.free { --c: var(--blue); --soft: var(--blue-soft); }
+.eve { --c: var(--yellow); --soft: var(--yellow-soft); }
+.eve .onmap { color: var(--ink); }
+
+.mapbox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 14px 12px; }
+.mapbox h3 { font-size: 1.3rem; font-weight: 700; }
+.mapbox .sub { margin: 2px 0 10px; color: var(--muted); font-size: 14px; }
+#map { display: block; width: 100%; height: auto; border-radius: 6px; background: var(--sea); }
+.sea { fill: var(--sea); }
+.island { fill: var(--land); stroke: var(--land-line); stroke-width: 2.5; stroke-linejoin: round; }
+.islandname { font-family: var(--font-mono); font-size: 22px; letter-spacing: .3em; fill: var(--muted); opacity: .7; }
+.pin { cursor: default; }
+.pin .dot { fill: var(--muted); stroke: var(--surface); stroke-width: 3; }
+.pin.dim { opacity: .5; }
+.pin.sel .dot { fill: var(--c); stroke: var(--ink); stroke-width: 2.5; }
+.pin.fixed .dot { fill: var(--red); stroke: var(--surface); }
+.pin .base { fill: var(--ink); stroke: var(--surface); stroke-width: 3; }
+.pin.sel .base { fill: var(--c); stroke: var(--ink); stroke-width: 2.5; }
+.pin text { font-family: var(--font-body); font-weight: 600; font-size: 26px; fill: var(--ink); stroke: var(--surface); stroke-width: 7px; paint-order: stroke; stroke-linejoin: round; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1.5px solid var(--ink); }
+.legend i.d { border-radius: 0; transform: rotate(45deg) scale(.85); background: var(--ink); }
+.mapnote { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
+.backlink { display: none; margin-top: 10px; font-family: var(--font-mono); font-size: 12px; background: none; border: 0; padding: 0; color: var(--blue); cursor: pointer; text-decoration: underline; }
+@media (max-width: 979px) { .backlink { display: inline-block; } }
+
+section.block { margin-top: 56px; }
+section.block > h2 { font-size: clamp(1.7rem, 3.4vw, 2.2rem); font-weight: 800; letter-spacing: -.01em; }
+section.block > p.intro { color: var(--muted); max-width: 62ch; margin: 6px 0 20px; }
+.places { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.place { background: var(--surface); border: 1.5px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+.place.hot { border-color: var(--c, var(--blue)); }
+.place .area { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.place h3 { font-size: 1.2rem; font-weight: 700; margin: 3px 0 8px; }
+.place p { margin: 0 0 10px; font-size: 15px; }
+.place dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13.5px; border-top: 1px solid var(--line); padding-top: 10px; }
+.place dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+.place dd { margin: 0; min-width: 0; }
+.place.fixedcard { border-color: var(--red); background: var(--surface); }
+.place .badge { display: inline-block; font-family: var(--font-mono); font-size: 11.5px; background: var(--red-soft); color: var(--ink); border-radius: 4px; padding: 1px 7px; margin-left: 6px; text-transform: none; letter-spacing: 0; }
+
+.notes { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); }
+.note { border-top: 3px solid var(--ink); padding-top: 10px; min-width: 0; }
+.note h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+.note p, .note li { font-size: 15px; margin: 0 0 8px; }
+.note ul { margin: 0; padding-left: 18px; }
+.sources { font-size: 13.5px; color: var(--muted); margin-top: 40px; }
+.sources a { color: var(--blue); overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: no-preference) {
+  .opt, .place { transition: border-color .15s, background-color .15s; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">14–22 November 2026 · Based in Sliema</div>
+    <h1>Malta in November</h1>
+    <p class="lead">Sunday’s Marsaxlokk fish market is the only fixed plan. Everything else is a menu. Pick what suits the day and the weather, and tap an option to see its stops on the map.</p>
+    <ul class="days" id="days" aria-label="Days of the trip"></ul>
+  </header>
+
+  <div class="main">
+    <div class="optcol">
+      <div class="group">
+        <h2>Free days</h2>
+        <p class="hint">For Sun 15 afternoon, Wed 18 and Sat 21. Pick one per day.</p>
+        <div class="opts free" id="opts-free"></div>
+      </div>
+      <div class="group">
+        <h2>Working-day evenings</h2>
+        <p class="hint">For Mon 16, Tue 17, Thu 19 and Fri 20. It is dark by about 17:30, so these are dinner and atmosphere plans.</p>
+        <div class="opts eve" id="opts-eve"></div>
+      </div>
+    </div>
+
+    <aside class="mapcol" id="mapcol" aria-label="Map of the options">
+      <div class="mapbox">
+        <h3 id="map-title"></h3>
+        <p class="sub" id="map-sub"></p>
+        <svg id="map" viewBox="0 0 960 800" role="img" aria-label="Schematic map of Malta and Gozo showing the stops of the selected option"></svg>
+        <ul class="legend">
+          <li><i style="background:var(--red)"></i>Fixed: Sun 15 market</li>
+          <li><i style="background:var(--blue)"></i>Free-day stop</li>
+          <li><i style="background:var(--yellow)"></i>Evening stop</li>
+          <li><i class="d"></i>Sliema, our base</li>
+        </ul>
+        <p class="mapnote">Schematic map. Coastline and positions are approximate, so use Google Maps for navigation.</p>
+        <button class="backlink" id="backlink" type="button">Back to the options</button>
+      </div>
+    </aside>
+  </div>
+
+  <section class="block" id="places-sec">
+    <h2>What to expect</h2>
+    <p class="intro">A short description of every place in the options above. Hours and prices come from search results, so confirm them before you go.</p>
+    <div class="places" id="places"></div>
+  </section>
+
+  <section class="block">
+    <h2>Getting around and planning</h2>
+    <p class="intro">The practical side: cars, buses, ferries, weather and the baby.</p>
+    <div class="notes">
+      <div class="note">
+        <h3>Car or no car</h3>
+        <p>Rent a car for Sunday and for any free day you pick a car trip. Evenings work without one, and parking is hard in Valletta, Mdina and Sliema.</p>
+        <p>If the Sliema stay has parking, one rental from Sun 15 covers every car day. If not, book single days from a Sliema agency. Ask for an infant seat and check the agreement allows the Gozo ferry.</p>
+      </div>
+      <div class="note">
+        <h3>Buses</h3>
+        <p>Buses have seats and standing room. Priority seats near the front are marked for parents with infants, and the buses are low-floor and described as suitable for pushchairs. I could not confirm a pram rule.</p>
+        <p>Popular routes such as Sliema to Mdina and the Ċirkewwa ferry get so full that people stand for nearly an hour, and full buses can skip stops. Board at the first stop, the Sliema ferry stop, to get a seat.</p>
+      </div>
+      <div class="note">
+        <h3>Ferries and rideshare</h3>
+        <p>The Sliema to Valletta ferry takes about 10 minutes and runs roughly every 30 minutes. In winter the last departure is around 19:30 Monday to Saturday, and about 18:30 on Sundays.</p>
+        <p>Use Bolt, Uber or eCabs after that. Standard taxis often have no infant seat, so pre-book the airport transfer with one.</p>
+      </div>
+      <div class="note">
+        <h3>Weather and daylight</h3>
+        <ul>
+          <li>Highs around 20°C, nights 14 to 17°C.</li>
+          <li>About 10 rainy days in November, usually short showers.</li>
+          <li>Sea about 21°C, too cold for most people to swim.</li>
+          <li>Sunset about 16:55, sunrise about 06:38.</li>
+          <li>Strong north-westerly wind is common and affects ferries and the cliffs more than rain does.</li>
+        </ul>
+        <p style="margin-top:8px">No reliable day-by-day forecast exists yet. Check on Nov 12 to 13 and the evening before each free day.</p>
+      </div>
+      <div class="note">
+        <h3>Arrival and departure</h3>
+        <p>Sat 14: late-night arrival, straight to Sliema, no plans. Pre-book a transfer.</p>
+        <p>Sun 22: afternoon flight. Leave Sliema about 3 hours before departure by pre-booked transfer, and return any rental the day before.</p>
+      </div>
+      <div class="note">
+        <h3>Before you fly</h3>
+        <ul>
+          <li>Book the rental car and infant seat.</li>
+          <li>Ask the Sliema stay about parking.</li>
+          <li>Install Bolt and Uber.</li>
+          <li>Pre-book the Sat 14 airport transfer.</li>
+          <li>Reserve a waterfront fish lunch in Marsaxlokk for Sun 15 and bring cash.</li>
+          <li>Check the forecast on Nov 12 to 13.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="sources">Sources, as of 6 November 2026, from search results:
+      <a href="https://heritagemalta.mt/explore/hagar-qim-and-mnajdra-archaeological-park/">Heritage Malta</a>,
+      <a href="https://www.visitmalta.com/en/?p=23012">Visit Malta</a>,
+      <a href="https://departly.pages.dev/to/malta/marsaxlokk/">Marsaxlokk market guide</a>,
+      <a href="https://www.transport.gov.mt/maritime/ports-commercial/passenger-transport-by-sea-110">Transport Malta ferries</a>,
+      <a href="https://www.thetripverdict.com/malta-gozo-ferry">Gozo ferry guide</a>,
+      <a href="https://www.publictransport.com.mt/travel-information/accessibility/">Malta Public Transport</a>,
+      <a href="https://www.awaywithmaja.com/visiting-malta-public-transportation-tips-tricks-getting-around/">Away With Maja</a>,
+      <a href="https://www.nomadotravel.app/en/places/three-cities">Three Cities guide</a>,
+      <a href="https://www.weather2travel.com/malta/november">Weather2Travel</a>.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var X = function (lon) { return (lon - 14.17) * 2093; };
+  var Y = function (lat) { return (36.10 - lat) * 2581; };
+  var poly = function (pts) {
+    return "M" + pts.map(function (p) { return X(p[0]).toFixed(1) + "," + Y(p[1]).toFixed(1); }).join("L") + "Z";
+  };
+
+  var MALTA = [[14.330,35.995],[14.350,35.985],[14.362,35.975],[14.378,35.965],[14.395,35.958],[14.412,35.955],[14.426,35.957],[14.440,35.950],[14.455,35.936],[14.475,35.935],[14.490,35.925],[14.500,35.918],[14.503,35.910],[14.512,35.903],[14.518,35.898],[14.530,35.895],[14.536,35.885],[14.548,35.880],[14.560,35.870],[14.576,35.858],[14.568,35.845],[14.552,35.832],[14.560,35.822],[14.535,35.814],[14.510,35.822],[14.480,35.830],[14.452,35.814],[14.420,35.814],[14.392,35.824],[14.376,35.840],[14.352,35.868],[14.341,35.895],[14.336,35.925],[14.341,35.945],[14.331,35.956],[14.316,35.976]];
+  var GOZO = [[14.190,36.045],[14.200,36.065],[14.230,36.075],[14.270,36.083],[14.310,36.078],[14.340,36.072],[14.346,36.060],[14.322,36.040],[14.302,36.020],[14.270,36.015],[14.232,36.025],[14.200,36.030]];
+  var COMINO = [[14.325,36.012],[14.335,36.020],[14.347,36.016],[14.340,36.008]];
+
+  var DAYS = [
+    ["Sat 14", "Late arrival, no plans", "arrival"],
+    ["Sun 15", "Marsaxlokk market, then pick", "set"],
+    ["Mon 16", "Evening pick", "work"],
+    ["Tue 17", "Evening pick", "work"],
+    ["Wed 18", "Free day, pick", "free"],
+    ["Thu 19", "Evening pick", "work"],
+    ["Fri 20", "Evening pick", "work"],
+    ["Sat 21", "Free day, pick", "free"],
+    ["Sun 22", "Slow morning, afternoon flight", "leave"]
+  ];
+
+  var P = {
+    marsaxlokk: { name: "Marsaxlokk", label: "Marsaxlokk (Sun 15)", area: "South-east", fixed: true, lat: 35.842, lon: 14.544, dir: "l",
+      text: "The largest fishing village in Malta, built around a bay of brightly painted luzzu boats. On Sundays the market fills the whole waterfront with fish straight off the boats, plus honey, jam and souvenirs. Waterfront restaurants serve the catch for lunch.",
+      facts: [["Time", "1.5 to 2.5 hours, plus a long lunch"], ["Baby", "Flat promenade, the pram works"], ["Good to know", "The market runs roughly 07:00 to 13:00 and is best before 09:00. Bring cash and reserve lunch."]] },
+    valletta: { name: "Valletta", area: "Grand Harbour", lat: 35.899, lon: 14.514, dir: "r",
+      text: "The fortified capital, built by the Knights of St John from the 16th century. Walk Republic Street, look over the Grand Harbour from the Upper Barrakka Gardens and see the baroque interior of St John’s Co-Cathedral.",
+      facts: [["Time", "Half a day, or 2 to 3 hours in the evening"], ["Baby", "Steep and stepped in places, so the carrier is easier"], ["Good to know", "The ferry from Sliema takes about 10 minutes. The last winter ferry is around 19:30, so plan a rideshare after that."]] },
+    threecities: { name: "The Three Cities", label: "Three Cities (Birgu)", area: "Across the Grand Harbour", lat: 35.887, lon: 14.523, dir: "r",
+      text: "Birgu, Senglea and Cospicua are three old fortified towns across the harbour from Valletta. Birgu has Fort St Angelo, the Inquisitor’s Palace and a marina lined with restaurants. Senglea has the Gardjola lookout with the best view back to Valletta. Cospicua is quiet and mostly residential.",
+      facts: [["Time", "2 to 3 hours, or an evening in Birgu"], ["Baby", "Quiet streets and a flat waterfront, the pram works well"], ["Good to know", "Most restaurants are on the Birgu waterfront. The Three Cities ferry stops earlier in winter, so check the timetable or take a rideshare."]] },
+    base: { name: "Sliema and Gżira promenade", label: "Sliema (base)", area: "Our base", base: true, lat: 35.912, lon: 14.502, dir: "r",
+      text: "Where you are staying. A long, flat seafront walk with cafés and restaurants and a view across the water to Valletta. This is the easy evening for tired days.",
+      facts: [["Time", "1 to 2 hours"], ["Baby", "Flat, the pram works"], ["Good to know", "No transport needed."]] },
+    stjulians: { name: "St Julian’s and Spinola Bay", label: "St Julian’s", area: "Next to Sliema", lat: 35.918, lon: 14.490, dir: "l",
+      text: "A short walk or ride from Sliema. Spinola Bay is a small harbour with colourful boats and a ring of restaurants. The streets next to it are Malta’s main nightlife district, so it gets busier later at night.",
+      facts: [["Time", "About 2 hours with dinner"], ["Baby", "Mostly flat, can be crowded"], ["Good to know", "Reserve a table, popular places fill up."]] },
+    mdina: { name: "Mdina and Rabat", label: "Mdina and Rabat", area: "Centre-west", lat: 35.886, lon: 14.403, dir: "r",
+      text: "Mdina is the walled former capital on a hill, with narrow lanes, old palaces and a cathedral square. Private cars are mostly kept out, so it is quiet, and the bastions look over the island. Rabat, just outside the walls, has everyday cafés and the classic pastizzi.",
+      facts: [["Time", "2 hours by day, or an evening visit"], ["Baby", "Cobbled and uneven, so use the carrier"], ["Good to know", "Lit up and very quiet after dark. About 30 minutes from Sliema by rideshare, and parking is hard."]] },
+    buskett: { name: "Buskett Gardens", label: "Buskett Gardens", area: "Near Rabat", lat: 35.857, lon: 14.396, dir: "r",
+      text: "A shaded area of trees and orchards near Rabat, cooler and calmer than the coast. A good walk and a baby break between Mdina and the cliffs.",
+      facts: [["Time", "1 to 1.5 hours"], ["Baby", "Easy walking, check the paths before taking the pram"], ["Good to know", "Bring layers, it is cooler under the trees."]] },
+    dingli: { name: "Dingli Cliffs", label: "Dingli Cliffs", area: "West coast", lat: 35.853, lon: 14.373, dir: "l",
+      text: "The highest point in Malta, about 250 m above the sea, with long views over open water and a small chapel near the cliff edge. It is the best sunset spot on the island, and there is little shelter.",
+      facts: [["Time", "About 1 hour"], ["Baby", "Keep the pram near the car, the cliff top is exposed"], ["Good to know", "Sunset is around 16:50. Strong wind is common, so skip it in cloud or a gale."]] },
+    hagarqim: { name: "Ħaġar Qim and Mnajdra", label: "Ħaġar Qim and Mnajdra", area: "South-west coast", lat: 35.827, lon: 14.442, dir: "l",
+      text: "Two Neolithic temples about 5,500 years old and part of Malta’s UNESCO World Heritage sites. Ħaġar Qim sits on a hilltop under a large protective canopy, with a visitor centre and museum. Mnajdra is a 500 m walk downhill by the sea.",
+      facts: [["Time", "1.5 to 2.5 hours for both"], ["Baby", "Ħaġar Qim is easy. The path down to Mnajdra is steep and exposed, so use the carrier or skip it."], ["Good to know", "Winter hours 09:00 to 17:00, last entry 16:30. Adults €10, children 1 to 5 free."]] },
+    bluegrotto: { name: "Blue Grotto viewpoint", label: "Blue Grotto", area: "South coast", lat: 35.819, lon: 14.459, dir: "r",
+      text: "A set of sea caves near Żurrieq. The cliff viewpoint is free and shows the arches and the water. Boat trips into the caves only run when the sea is calm.",
+      facts: [["Time", "30 to 60 minutes at the viewpoint"], ["Baby", "Easy viewpoint stop, no boat needed"], ["Good to know", "Check conditions before booking a boat. It pairs with Ħaġar Qim a few minutes away."]] },
+    delimara: { name: "Delimara", label: "Delimara", area: "South-east", lat: 35.829, lon: 14.560, dir: "b",
+      text: "A rocky peninsula south of Marsaxlokk with a lighthouse, sea views and St Peter’s Pool, a rock pool popular for swimming in summer. In November the sea is around 21°C, which most people find too cold.",
+      facts: [["Time", "1 to 2 hours"], ["Baby", "Rocky ground, use the carrier"], ["Good to know", "An easy add-on after the Marsaxlokk market."]] },
+    munxar: { name: "Munxar Path", label: "Munxar Path", area: "East coast", lat: 35.856, lon: 14.571, dir: "t",
+      text: "A coastal route on the east side of the island, the pin you saved. I could not confirm its length or surface, so look at the first stretch before committing.",
+      facts: [["Time", "Check on the map"], ["Baby", "Carrier or walkers only until you have seen the path"], ["Good to know", "Best on a dry day, in daylight."]] },
+    gozo: { name: "Gozo and the ferry", label: "Ċirkewwa ferry", area: "North, then across the channel", lat: 35.987, lon: 14.327, dir: "l",
+      text: "Malta’s smaller, quieter and greener sister island, about 14 km long. The ferry from Ċirkewwa to Mġarr takes about 25 minutes and runs roughly every 45 minutes. You pay for the return at the Mġarr terminal, and the ferry takes rental cars.",
+      facts: [["Time", "Full day, leave Sliema by 08:00"], ["Baby", "Use the carrier in the old towns"], ["Good to know", "Strong wind can disrupt crossings, so check Gozo Channel’s updates that morning. Without a car, the Valletta to Mġarr fast ferry takes about 45 minutes."]] },
+    citadel: { name: "Victoria Citadel", label: "Victoria Citadel", area: "Gozo", lat: 36.045, lon: 14.240, dir: "b",
+      text: "The fortified hilltop old town of Victoria, Gozo’s capital, with ramparts, a cathedral and views across the island. Take the main lanes slowly, there are steps and cobbles.",
+      facts: [["Time", "1.5 to 2 hours"], ["Baby", "Cobbles and steps, use the carrier"], ["Good to know", "Opening hours not checked, confirm before you go."]] },
+    ggantija: { name: "Ġgantija temples", label: "Ġgantija", area: "Gozo", lat: 36.047, lon: 14.269, dir: "r",
+      text: "Neolithic temples about 5,500 years old on Gozo, older than Stonehenge and part of the same UNESCO listing as Ħaġar Qim.",
+      facts: [["Time", "About 1 hour"], ["Baby", "Short visit, carrier is easiest"], ["Good to know", "Winter hours not checked, confirm with Heritage Malta."]] },
+    popeye: { name: "Popeye Village, Mellieħa", label: "Popeye Village", area: "North-west", lat: 35.957, lon: 14.345, dir: "r",
+      text: "A film set built for the 1980 Popeye movie, now a family attraction in Anchor Bay near Mellieħa. The setting is a small bay with wooden buildings, and part of it is outdoors.",
+      facts: [["Time", "Half a day including the drive"], ["Baby", "Check which parts suit a baby"], ["Good to know", "Check winter opening hours before you go."]] }
+  };
+
+  var OPTS = [
+    { id: "west", group: "free", title: "West coast loop", pitch: "Walled Mdina, lunch in Rabat, a shaded break at Buskett and sunset on the Dingli Cliffs.", tags: ["Car", "Full day", "Dry, low wind"], stops: ["mdina", "buskett", "dingli"], tip: "Leave by 09:15 and be at Dingli by 15:45 for sunset at about 16:50. Skip Golden Bay in winter: steep steps and an early dark." },
+    { id: "gozo", group: "free", title: "Gozo", pitch: "A day on the quieter island: Victoria’s hilltop citadel and the Ġgantija temples.", tags: ["Car or foot", "Full day", "Calm and dry"], stops: ["gozo", "citadel", "ggantija"], tip: "Leave Sliema by 08:00 and take a ferry back by 15:30 to 16:00 to avoid driving in the dark." },
+    { id: "valletta", group: "free", title: "Valletta and the Three Cities", pitch: "Valletta in the morning, then across the harbour to Birgu and Senglea.", tags: ["No car", "Half to full day", "Any weather"], stops: ["valletta", "threecities"], tip: "The best choice for a wet day, with churches and indoor sights to keep you dry." },
+    { id: "temples", group: "free", title: "Southern temples", pitch: "5,500-year-old temples above the sea, then the Blue Grotto viewpoint.", tags: ["Car", "Half day", "Dry or light rain"], stops: ["hagarqim", "bluegrotto"], tip: "Be inside the temple park before 16:30. Ħaġar Qim is mostly under a canopy." },
+    { id: "southeast", group: "free", title: "South-east coast walks", pitch: "Rocky headlands and sea views around Delimara and Munxar Path.", tags: ["Car", "2 to 3 hours", "Dry"], stops: ["delimara", "munxar"], tip: "A natural add-on to Marsaxlokk on Sunday afternoon." },
+    { id: "north", group: "free", title: "Popeye Village and the north", pitch: "The film-set village and the north-west coast around Mellieħa.", tags: ["Car", "Half day", "Dry"], stops: ["popeye"], tip: "Check winter opening hours first." },
+
+    { id: "promenade", group: "eve", title: "Sliema and Gżira promenade", pitch: "The easiest evening: a flat seafront walk and dinner close to home.", tags: ["Walk", "1 to 2 hours", "Any weather"], stops: ["base"], tip: "The buffer night if anyone is tired." },
+    { id: "julians", group: "eve", title: "St Julian’s and Spinola Bay", pitch: "Dinner around the small harbour and its boats.", tags: ["Walk or short ride", "About 2 hours"], stops: ["stjulians"], tip: "Reserve a table." },
+    { id: "valdusk", group: "eve", title: "Valletta at dusk", pitch: "Upper Barrakka Gardens, a walk down Republic Street and dinner in the capital.", tags: ["Ferry", "About 3 hours"], stops: ["valletta"], tip: "The last ferry back is around 19:30, then take a rideshare." },
+    { id: "birgu", group: "eve", title: "Birgu waterfront", pitch: "Dinner on the marina in Birgu, beside Fort St Angelo.", tags: ["Rideshare", "2 to 3 hours"], stops: ["threecities"], tip: "Rideshare both ways. The Three Cities ferry stops early in winter." },
+    { id: "mdinanight", group: "eve", title: "Mdina after dark", pitch: "A quiet, lit-up walled town and dinner in Mdina or Rabat.", tags: ["Rideshare", "About 30 min each way"], stops: ["mdina"], tip: "Cobbled streets, so bring the carrier." }
+  ];
+
+  var byId = {};
+  OPTS.forEach(function (o) { byId[o.id] = o; });
+  var selected = "west";
+
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+  /* day strip */
+  var daysEl = document.getElementById("days");
+  DAYS.forEach(function (d) {
+    var li = el("li", "day " + d[2], "<b>" + d[0] + "</b><span>" + d[1] + "</span>");
+    daysEl.appendChild(li);
+  });
+
+  /* option cards */
+  function stopNames(o) { return o.stops.map(function (s) { return P[s].name; }).join(" · "); }
+  OPTS.forEach(function (o) {
+    var b = el("button", "opt");
+    b.type = "button";
+    b.dataset.id = o.id;
+    b.setAttribute("aria-pressed", "false");
+    b.innerHTML = "<h3>" + o.title + "</h3>" +
+      "<div class=\"tags\">" + o.tags.map(function (t) { return "<span class=\"tag\">" + t + "</span>"; }).join("") + "</div>" +
+      "<p class=\"pitch\">" + o.pitch + "</p>" +
+      "<p class=\"stops\">" + stopNames(o) + "</p>" +
+      "<p class=\"tip\">" + o.tip + "</p>" +
+      "<span class=\"onmap\">Show on map</span>";
+    b.addEventListener("click", function () { select(o.id, true); });
+    document.getElementById(o.group === "free" ? "opts-free" : "opts-eve").appendChild(b);
+  });
+
+  /* place cards */
+  var placesEl = document.getElementById("places");
+  Object.keys(P).forEach(function (id) {
+    var p = P[id];
+    var c = el("article", "place" + (p.fixed ? " fixedcard" : ""));
+    c.id = "place-" + id;
+    c.dataset.id = id;
+    c.innerHTML = "<div class=\"area\">" + p.area + (p.fixed ? "<span class=\"badge\">Fixed plan, Sun 15</span>" : "") + "</div>" +
+      "<h3>" + p.name + "</h3><p>" + p.text + "</p><dl>" +
+      p.facts.map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("") + "</dl>";
+    placesEl.appendChild(c);
+  });
+
+  /* map */
+  var svg = document.getElementById("map");
+  function drawMap() {
+    var o = byId[selected];
+    var color = o.group === "free" ? "var(--blue)" : "var(--yellow)";
+    var html = "<rect class=\"sea\" width=\"960\" height=\"800\"/>" +
+      "<path class=\"island\" d=\"" + poly(MALTA) + "\"/>" +
+      "<path class=\"island\" d=\"" + poly(GOZO) + "\"/>" +
+      "<path class=\"island\" d=\"" + poly(COMINO) + "\"/>" +
+      "<text class=\"islandname\" x=\"" + X(14.41) + "\" y=\"" + Y(35.935) + "\" text-anchor=\"middle\">MALTA</text>" +
+      "<text class=\"islandname\" x=\"" + X(14.275) + "\" y=\"" + Y(36.062) + "\" text-anchor=\"middle\">GOZO</text>";
+    var ids = Object.keys(P).sort(function (a, b) {
+      return (o.stops.indexOf(a) >= 0 ? 1 : 0) - (o.stops.indexOf(b) >= 0 ? 1 : 0);
+    });
+    ids.forEach(function (id) {
+      var p = P[id], x = X(p.lon), y = Y(p.lat);
+      var sel = o.stops.indexOf(id) >= 0;
+      var showLabel = sel || p.fixed || p.base;
+      var cls = "pin" + (sel ? " sel" : " dim") + (p.fixed ? " fixed" : "");
+      if (p.fixed || p.base) cls = cls.replace(" dim", "");
+      var shape = p.base ? "<polygon class=\"base\" points=\"0,-14 14,0 0,14 -14,0\"/>" : "<circle class=\"dot\" r=\"" + (sel ? 13 : 8) + "\"/>";
+      var tx = 0, ty = 0, anchor = "middle";
+      if (p.dir === "l") { tx = -20; ty = 9; anchor = "end"; }
+      if (p.dir === "r") { tx = 20; ty = 9; anchor = "start"; }
+      if (p.dir === "t") { ty = -22; }
+      if (p.dir === "b") { ty = 40; }
+      var label = showLabel ? "<text x=\"" + tx + "\" y=\"" + ty + "\" text-anchor=\"" + anchor + "\">" + p.label + "</text>" : "";
+      html += "<g class=\"" + cls + "\" style=\"--c:" + color + "\" transform=\"translate(" + x.toFixed(1) + "," + y.toFixed(1) + ")\"><title>" + p.name + "</title>" + shape + label + "</g>";
+    });
+    svg.innerHTML = html;
+    document.getElementById("map-title").textContent = o.title;
+    document.getElementById("map-sub").textContent = o.stops.length + (o.stops.length === 1 ? " stop" : " stops") + " · " + o.tags.join(" · ");
+  }
+
+  function select(id, fromUser) {
+    selected = id;
+    var o = byId[id];
+    document.querySelectorAll(".opt").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.id === id ? "true" : "false");
+    });
+    document.querySelectorAll(".place").forEach(function (c) {
+      var hot = o.stops.indexOf(c.dataset.id) >= 0;
+      c.classList.toggle("hot", hot);
+      c.style.setProperty("--c", o.group === "free" ? "var(--blue)" : "var(--yellow)");
+    });
+    drawMap();
+    if (fromUser && window.matchMedia("(max-width: 979px)").matches) {
+      var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      document.getElementById("mapcol").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    }
+  }
+
+  document.getElementById("backlink").addEventListener("click", function () {
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.querySelector(".optcol").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  });
+
+  select("west", false);
+})();
+</script>
+</body>
+</html>
